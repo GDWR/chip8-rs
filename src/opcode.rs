@@ -105,11 +105,11 @@ pub enum Operation {
     ///
     /// Skips the next instruction if VX does not equal VY.
     /// (Usually the next instruction is a jump to skip a code block);
-    InequalityRegister { x: u8, y: u8 },
+    InequalityRegisterCheck { x: u8, y: u8 },
 
     /// Code: ANNN
     ///
-    /// Sets I to the address NNN. 
+    /// Sets I to the address NNN.
     SetIndexToAddress { nnn: u16 },
 
     /// Code: BNNN
@@ -205,7 +205,12 @@ fn parse_x(opcode: u16) -> u8 {
 }
 
 #[inline]
-fn parse_x_y(opcode: u16) -> (u8, u8) { (((opcode & 0x0F00) >> 8) as u8, ((opcode & 0x00F0) >> 4) as u8) }
+fn parse_x_y(opcode: u16) -> (u8, u8) {
+    (
+        ((opcode & 0x0F00) >> 8) as u8,
+        ((opcode & 0x00F0) >> 4) as u8,
+    )
+}
 
 #[inline]
 fn parse_x_y_n(opcode: u16) -> (u8, u8, u8) {
@@ -216,11 +221,14 @@ fn parse_x_y_n(opcode: u16) -> (u8, u8, u8) {
 }
 
 #[inline]
-fn parse_x_nn(opcode: u16) -> (u8, u8) { (((opcode & 0x0F00) >> 8) as u8, (opcode & 0x00FF) as u8) }
+fn parse_x_nn(opcode: u16) -> (u8, u8) {
+    (((opcode & 0x0F00) >> 8) as u8, (opcode & 0x00FF) as u8)
+}
 
 #[inline]
-fn parse_nnn(opcode: u16) -> u16 { opcode & 0x0FFF }
-
+fn parse_nnn(opcode: u16) -> u16 {
+    opcode & 0x0FFF
+}
 
 /// Decode u16 into Chip-8 opcode.
 pub fn decode(opcode: u16) -> Result<Operation, ()> {
@@ -229,10 +237,14 @@ pub fn decode(opcode: u16) -> Result<Operation, ()> {
             0x0000 => Ok(Operation::NoOperation),
             0x00E0 => Ok(Operation::ClearDisplay),
             0x00EE => Ok(Operation::SubroutineReturn),
-            _ => Err(())
-        }
-        0x1000 => Ok(Operation::GotoAddress { nnn: parse_nnn(opcode) }),
-        0x2000 => Ok(Operation::SubroutineCall { nnn: parse_nnn(opcode) }),
+            _ => Err(()),
+        },
+        0x1000 => Ok(Operation::GotoAddress {
+            nnn: parse_nnn(opcode),
+        }),
+        0x2000 => Ok(Operation::SubroutineCall {
+            nnn: parse_nnn(opcode),
+        }),
         0x3000 => {
             let (x, nn) = parse_x_nn(opcode);
             Ok(Operation::EqualityCheck { x, nn })
@@ -265,15 +277,19 @@ pub fn decode(opcode: u16) -> Result<Operation, ()> {
                 0x0006 => Ok(Operation::StoreLeastSignificant { x, y }),
                 0x0007 => Ok(Operation::SubtractValueFromRegister { x, y }),
                 0x000E => Ok(Operation::StoreMostSignificant { x, y }),
-                _ => Err(())
+                _ => Err(()),
             }
         }
         0x9000 => {
             let (x, y) = parse_x_y(opcode);
-            Ok(Operation::InequalityRegister { x, y })
+            Ok(Operation::InequalityRegisterCheck { x, y })
         }
-        0xA000 => Ok(Operation::SetIndexToAddress { nnn: parse_nnn(opcode) }),
-        0xB000 => Ok(Operation::GotoAddressWithRegister { nnn: parse_nnn(opcode) }),
+        0xA000 => Ok(Operation::SetIndexToAddress {
+            nnn: parse_nnn(opcode),
+        }),
+        0xB000 => Ok(Operation::GotoAddressWithRegister {
+            nnn: parse_nnn(opcode),
+        }),
         0xC000 => {
             let (x, nn) = parse_x_nn(opcode);
             Ok(Operation::AssignRandomNumber { x, nn })
@@ -287,7 +303,7 @@ pub fn decode(opcode: u16) -> Result<Operation, ()> {
             match opcode & 0x00FF {
                 0x009E => Ok(Operation::SkipIfKeyPressed { x }),
                 0x00A1 => Ok(Operation::SkipIfKeyNotPressed { x }),
-                _ => Err(())
+                _ => Err(()),
             }
         }
         0xF000 => {
@@ -302,10 +318,10 @@ pub fn decode(opcode: u16) -> Result<Operation, ()> {
                 0x0033 => Ok(Operation::StoreBinaryCodedDecimal { x }),
                 0x0055 => Ok(Operation::StoreRegistersInMemory { x }),
                 0x0065 => Ok(Operation::SetRegistersFromMemory { x }),
-                _ => Err(())
+                _ => Err(()),
             }
         }
-        _ => Err(())
+        _ => Err(()),
     }
 }
 
