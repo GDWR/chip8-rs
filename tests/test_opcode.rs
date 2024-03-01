@@ -21,7 +21,7 @@ use chip8::opcode::{decode, Operation};
 #[case(0x8006, Operation::StoreLeastSignificant { x: 0, y: 0 })]
 #[case(0x8007, Operation::SubtractValueFromRegister { x: 0, y: 0 })]
 #[case(0x800E, Operation::StoreMostSignificant { x: 0, y: 0 })]
-#[case(0x9000, Operation::InequalityRegister { x: 0, y: 0 })]
+#[case(0x9000, Operation::InequalityRegisterCheck { x: 0, y: 0 })]
 #[case(0xA000, Operation::SetIndexToAddress { nnn: 0 })]
 #[case(0xB000, Operation::GotoAddressWithRegister { nnn: 0 })]
 #[case(0xC000, Operation::AssignRandomNumber { x: 0, nn: 0 })]
